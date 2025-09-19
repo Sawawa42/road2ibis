@@ -22,12 +22,12 @@ TinyPaint::TinyPaint(GLuint width, GLuint height, const char* title): \
 	glfwMakeContextCurrent(_window);
 	glfwSetKeyCallback(_window, key_callback);
 
-	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK) {
-		glfwDestroyWindow(_window);
-		glfwTerminate();
-		throw std::runtime_error("GLEW initialization failed");
-	}
+	// glewExperimental = GL_TRUE;
+	// if (glewInit() != GLEW_OK) {
+	// 	glfwDestroyWindow(_window);
+	// 	glfwTerminate();
+	// 	throw std::runtime_error("GLEW initialization failed");
+	// }
 }
 
 TinyPaint::~TinyPaint() {

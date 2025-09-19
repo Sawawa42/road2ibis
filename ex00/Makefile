@@ -11,7 +11,7 @@ OBJS = $(SRCS:.cpp=.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) -lglfw -lGLEW -lGL
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) -lglfw -lGL
 
 clean:
 	rm -f $(OBJS)
