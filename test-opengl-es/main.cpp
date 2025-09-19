@@ -26,10 +26,6 @@ PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
 PFNGLDELETEPROGRAMPROC glDeleteProgram;
 PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
 PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-PFNGLVIEWPORTPROC glViewport;
-PFNGLCLEARPROC glClear;
-PFNGLCLEARCOLORPROC glClearColor;
-PFNGLDRAWARRAYSPROC glDrawArrays;
 
 // GLFWからOpenGL ESの関数を読み込むためのヘルパー関数
 void loadGLESFunctions() {
@@ -55,10 +51,6 @@ void loadGLESFunctions() {
     glDeleteProgram = (PFNGLDELETEPROGRAMPROC)glfwGetProcAddress("glDeleteProgram");
     glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)glfwGetProcAddress("glDeleteVertexArrays");
     glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)glfwGetProcAddress("glDeleteBuffers");
-    glViewport = (PFNGLVIEWPORTPROC)glfwGetProcAddress("glViewport");
-    glClear = (PFNGLCLEARPROC)glfwGetProcAddress("glClear");
-    glClearColor = (PFNGLCLEARCOLORPROC)glfwGetProcAddress("glClearColor");
-    glDrawArrays = (PFNGLDRAWARRAYSPROC)glfwGetProcAddress("glDrawArrays");
 }
 
 // 頂点シェーダー: 座標をそのまま渡す
