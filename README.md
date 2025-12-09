@@ -9,3 +9,7 @@
 ```
 sudo apt-get -y install libglfw3-dev libglew-dev
 ```
+
+## memo
+
+- Makefileでは-lGLESv2を利用しているが、libGLESv2.soにes 3.xは含まれているため、#include <GLFW/glfw3.h>で利用可能
