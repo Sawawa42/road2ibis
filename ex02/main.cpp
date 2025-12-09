@@ -46,6 +46,9 @@ int main() {
     }
     glfwMakeContextCurrent(window);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     Shader shader(vertexShaderSource, fragmentShaderSource);
 
     std::vector<float> vertices = {
@@ -64,7 +67,7 @@ int main() {
 
     {
         canvas.bind();
-        glClearColorUint8(255, 0, 0, 255); // カラーバッファのクリア値を赤色に設定
+        glClearColorUint8(255, 0, 0, 128); // カラーバッファのクリア値を半透明な赤色に設定
         glClear(GL_COLOR_BUFFER_BIT);
         canvas.unbind();
     }
