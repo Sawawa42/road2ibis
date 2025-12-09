@@ -11,8 +11,9 @@ const char* vertexShaderSource = R"(#version 300 es
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
 out vec2 TexCoord;
+uniform vec2 uScale;
 void main() {
-    gl_Position = vec4(aPos, 1.0);
+    gl_Position = vec4(aPos.x * uScale.x, aPos.y * uScale.y, aPos.z, 1.0);
     TexCoord = aTexCoord;
 })";
 
@@ -33,7 +34,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 
-    GLFWwindow* window = glfwCreateWindow(8000, 6000, "tinyPaint", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "tinyPaint", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -67,10 +68,25 @@ int main() {
     }
 
     while (!glfwWindowShouldClose(window)) {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // 白色を背景色に設定
-        glClear(GL_COLOR_BUFFER_BIT); // 画面をクリア
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // 白色
+        glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
+
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        glViewport(0, 0, width, height);
+
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (width > height) {
+            scaleX = (float)height / (float)width;
+        } else {
+            scaleY = (float)width / (float)height;
+        }
+        int scaleLoc = glGetUniformLocation(shader.ID, "uScale");
+        glUniform2f(scaleLoc, scaleX, scaleY);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, canvas.getTexture());

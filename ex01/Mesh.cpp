@@ -1,7 +1,7 @@
 #include "Mesh.hpp"
 
 Mesh::Mesh(const std::vector<float>& vertices) {
-    vertexCount = static_cast<int>(vertices.size() / 6); // ?
+    vertexCount = static_cast<int>(vertices.size() / 5);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
