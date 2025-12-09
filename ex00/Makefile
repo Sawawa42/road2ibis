@@ -1,5 +1,21 @@
-all:
-	c++ -std=c++11 main.cpp tinyPaint.cpp -o app-ex00 -lglfw -lGLESv2
+NAME = ex00
+CXX = c++
+CXXFLAGS = -std=c++11
+LIBS = -lglfw -lGLESv2
+SRCS = main.cpp Shader.cpp Mesh.cpp
+OBJS = $(SRCS:.cpp=.o)
 
-fclean:
-	rm -f app-ex00
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) $(LIBS)
+
+clean:
+	rm -f $(OBJS)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re

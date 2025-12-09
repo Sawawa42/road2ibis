@@ -3,8 +3,10 @@
 ## 導入
 
 - GLFWとGLEWをinstall
-  - GLFW: OpenGLの補助ライブラリ。入力やウィンドウを管理する。
-  - GLEW: OpenGLの拡張機能取得の補助
+  - GLFW: OpenGLの補助ライブラリ。入力やウィンドウを管理する。グラフィックライブラリフレームワーク
+    - GLUT(OpenGL Utility Toolkit)という1990年代の古いものもある
+  - GLEW: OpenGLの拡張機能取得の補助　GL Extension Wrangler Library
+    - 42Tokyo校舎では利用不可
 
 ```
 sudo apt-get -y install libglfw3-dev libglew-dev
