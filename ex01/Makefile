@@ -1,4 +1,4 @@
-NAME = ex00
+NAME = tinyPaint
 CXX = c++
 CXXFLAGS = -std=c++11
 LIBS = -lglfw -lGLESv2
