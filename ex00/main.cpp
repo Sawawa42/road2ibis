@@ -31,7 +31,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "ex00", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "tinyPaint", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         return -1;
