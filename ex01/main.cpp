@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 #include "Shader.hpp"
 #include "Mesh.hpp"
@@ -25,6 +26,10 @@ out vec4 FragColor;
 void main() {
     FragColor = texture(uTexture, TexCoord);
 })";
+
+void glClearColorUint8(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
 
 int main() {
     if (!glfwInit()) {
@@ -62,13 +67,13 @@ int main() {
 
     {
         canvas.bind();
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
+        glClearColorUint8(255, 0, 0, 255); // カラーバッファのクリア値を赤色に設定
         glClear(GL_COLOR_BUFFER_BIT);
         canvas.unbind();
     }
 
     while (!glfwWindowShouldClose(window)) {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // 白色
+        glClearColorUint8(255, 255, 255, 255); // カラーバッファのクリア値を白色に設定
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
