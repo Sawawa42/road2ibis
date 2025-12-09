@@ -27,23 +27,6 @@ void main() {
     FragColor = texture(uTexture, TexCoord);
 })";
 
-const char* brushVertexShaderSource = R"(#version 300 es
-layout(location = 0) in vec2 aPos;
-uniform vec2 uPos;
-uniform vec2 uSize;
-
-void main() {
-    vec2 pos = uPos + (aPos * uSize);
-    gl_Position = vec4(pos, 0.0, 1.0);
-})";
-
-const char* brushFragmentShaderSource = R"(#version 300 es
-precision mediump float;
-out vec4 FragColor;
-void main() {
-    FragColor = vec4(0.0, 0.0, 1.0, 1.0);
-})";
-
 void glClearColorUint8(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
@@ -75,7 +58,7 @@ int main() {
         1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 右下
     };
 
-    Mesh mesh(vertices);
+    Mesh mesh(vertices, MeshFormat::XYZ_UV);
 
     FrameBuffer canvas(4096, 4096);
 
@@ -111,7 +94,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, canvas.getTexture());
         glUniform1i(glGetUniformLocation(shader.ID, "uTexture"), 0);
 
-        mesh.draw();
+        mesh.draw(GL_TRIANGLE_STRIP);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
