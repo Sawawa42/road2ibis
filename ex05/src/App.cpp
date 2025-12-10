@@ -145,6 +145,17 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         if (inside) {
             canvas->bind();
             glViewport(0, 0, (int)fboSize, (int)fboSize);
+
+            if (!isDrawing) {
+                dirtyTiles.clear();
+            }
+
+            if (isDrawing) {
+                checkAndSaveTiles(lastX * fboSize, lastY * fboSize, canvasX * fboSize, canvasY * fboSize);
+            } else {
+                checkAndSaveTiles(canvasX * fboSize, canvasY * fboSize, canvasX * fboSize, canvasY * fboSize);
+            }
+
             brush->begin();
             if (isDrawing) {
                 brush->drawLine(lastX, lastY, canvasX, canvasY, fboSize);
@@ -222,7 +233,7 @@ void App::processPBO(int x, int y) {
     GLubyte* ptr = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT);
     if (ptr) {
         // テスト
-        std::cout << "R=" << (int)ptr[0] << " G=" << (int)ptr[1] << " B=" << (int)ptr[2] << " A=" << (int)ptr[3] << std::endl;
+        // std::cout << "R=" << (int)ptr[0] << " G=" << (int)ptr[1] << " B=" << (int)ptr[2] << " A=" << (int)ptr[3] << std::endl;
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 
@@ -233,4 +244,37 @@ void App::processPBO(int x, int y) {
     // PBOのインデックスを交換
     pboIndex = (pboIndex + 1) % 2;
     nextPboIndex = (nextPboIndex + 1) % 2;
+}
+
+void App::checkAndSaveTiles(float startX, float startY, float endX, float endY) {
+    // ブラシの移動範囲を含む影響範囲(バウンディングボックス)を計算
+    float radius = 30.0f / 2.0f + 2.0f; // ブラシ半径を少し余裕を持たせて計算(ハードコードなので要改善)
+
+    float minX = std::min(startX, endX) - radius;
+    float maxX = std::max(startX, endX) + radius;
+    float minY = std::min(startY, endY) - radius;
+    float maxY = std::max(startY, endY) + radius;
+
+    int tileStartX = (int)(minX) / tileSize;
+    int tileEndX = (int)(maxX) / tileSize;
+    int tileStartY = (int)(minY) / tileSize;
+    int tileEndY = (int)(maxY) / tileSize;
+
+    int tileMaxIndex = (int)(fboSize) / tileSize - 1;
+    tileStartX = std::max(0, std::min(tileStartX, tileMaxIndex));
+    tileEndX = std::max(0, std::min(tileEndX, tileMaxIndex));
+    tileStartY = std::max(0, std::min(tileStartY, tileMaxIndex));
+    tileEndY = std::max(0, std::min(tileEndY, tileMaxIndex));
+
+    for (int ty = tileStartY; ty <= tileEndY; ++ty) {
+        for (int tx = tileStartX; tx <= tileEndX; ++tx) {
+            TileCoord coord = {tx, ty};
+            if (dirtyTiles.find(coord) == dirtyTiles.end()) {
+                processPBO(tx * tileSize, ty * tileSize);
+                dirtyTiles.insert(coord);
+
+                std::cout << "debug: [" << tx << ", " << ty << "]" << std::endl;
+            }
+        }
+    }
 }

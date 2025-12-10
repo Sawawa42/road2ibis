@@ -2,11 +2,24 @@
 #include <GLES3/gl32.h>
 #include <GLFW/glfw3.h>
 #include <memory> // unique_ptr
+#include <set>
+#include <algorithm>
 
 #include "Shader.hpp"
 #include "Mesh.hpp"
 #include "FrameBuffer.hpp"
 #include "Brush.hpp"
+
+struct TileCoord {
+    int x, y;
+
+    bool operator<(const TileCoord& other) const {
+        if (x != other.x) {
+            return x < other.x;
+        }
+        return y < other.y;
+    }
+};
 
 class App {
     public:
@@ -50,4 +63,7 @@ class App {
         void initPBOs();
 
         void processPBO(int x, int y);
+
+        std::set<TileCoord> dirtyTiles;
+        void checkAndSaveTiles(float startX, float startY, float endX, float endY);
 };
