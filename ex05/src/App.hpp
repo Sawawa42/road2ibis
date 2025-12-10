@@ -34,4 +34,20 @@ class App {
         void render(int width, int height, float scaleX, float scaleY);
 
         void clearColorUint8(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
+        // ダブルバッファリング用に2つのPBOを用意
+        GLuint pboIds[2];
+
+        // 今読み出し命令を出しているPBOのインデックス
+        int pboIndex = 0;
+
+        // 次に読み出し命令を出すPBOのインデックス
+        int nextPboIndex = 1;
+
+        const int tileSize = 128; // px
+        const int channels = 4; // RGBA
+
+        void initPBOs();
+
+        void processPBO(int x, int y);
 };

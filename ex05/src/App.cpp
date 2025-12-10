@@ -70,6 +70,8 @@ void App::initOpenGL() {
     clearColorUint8(255, 0, 0, 128); // 本当は透明とかが良いが、確認しやすいように着色
     glClear(GL_COLOR_BUFFER_BIT);
     canvas->unbind();
+
+    initPBOs();
 }
 
 void App::run() {
@@ -87,6 +89,13 @@ void App::run() {
         }
 
         processInput(width, height, scaleX, scaleY);
+
+        // マウス位置周辺のタイルを非同期で読み出すテスト
+        double mx, my;
+        glfwGetCursorPos(window, &mx, &my);
+        // 座標変換などの処理は必要だが、まずはテストとして適当な位置
+        processPBO((int)mx, (int)(fboSize - my));
+
         render(width, height, scaleX, scaleY);
 
         glfwSwapBuffers(window);
@@ -190,4 +199,38 @@ void App::saveImage(const char* filename) {
     if (error) {
         std::cerr << "Error saving image: " << lodepng_error_text(error) << std::endl;
     }
+}
+
+void App::initPBOs() {
+    glGenBuffers(2, pboIds); // これはSeparateという格納方式だが、Interleavedのほうがキャッシュ的にいいらしい？
+    for (int i = 0; i < 2; i++) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
+        // GL_STREAM_READ: GPUが書き込み、CPUが読み取りする
+        glBufferData(GL_PIXEL_PACK_BUFFER, tileSize * tileSize * channels * sizeof(uint8_t), nullptr, GL_STREAM_READ);
+    }
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+}
+
+void App::processPBO(int x, int y) {
+    canvas->bind(); // FBOから読み取るのでバインド
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboIndex]); // 書き込み先のPBOをバインド
+
+    glReadPixels(x, y, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    GLubyte* ptr = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT);
+    if (ptr) {
+        // テスト
+        std::cout << "R=" << (int)ptr[0] << " G=" << (int)ptr[1] << " B=" << (int)ptr[2] << " A=" << (int)ptr[3] << std::endl;
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    }
+
+    // バインド解除
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    canvas->unbind();
+
+    // PBOのインデックスを交換
+    pboIndex = (pboIndex + 1) % 2;
+    nextPboIndex = (nextPboIndex + 1) % 2;
 }
