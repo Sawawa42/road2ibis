@@ -94,6 +94,27 @@ void App::run() {
 }
 
 void App::processInput(int width, int height, float scaleX, float scaleY) {
+    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) {
+        // 100pxの赤色半透明ブラシ(消しゴム代わり)
+        brush->setColor(255, 0, 0, 128);
+        brush->setSize(100.0f);
+    } else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        // 30pxの黒色ブラシ
+        brush->setColor(0, 0, 0, 255);
+        brush->setSize(30.0f);
+    } else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        // 30pxの赤色ブラシ
+        brush->setColor(255, 0, 0, 255);
+        brush->setSize(30.0f);
+    } else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+        // 30pxの緑色ブラシ
+        brush->setColor(0, 255, 0, 255);
+        brush->setSize(30.0f);
+    } else if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+        // 30pxの青色ブラシ
+        brush->setColor(0, 0, 255, 255);
+        brush->setSize(30.0f);
+    }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);

@@ -12,10 +12,10 @@ void main() {
 
 const char* brushFragmentShaderSource = R"(#version 300 es
 precision mediump float;
-uniform vec3 uColor;
+uniform vec4 uColor;
 out vec4 FragColor;
 void main() {
-    FragColor = vec4(uColor, 1.0);
+    FragColor = uColor;
 })";
 
 Brush::Brush() {
@@ -38,7 +38,7 @@ Brush::Brush() {
     mesh = new Mesh(vertices, MeshFormat::XY);
 
     // デフォルト設定
-    color[0] = 0.0f; color[1] = 0.0f; color[2] = 0.0f; // 黒色
+    color[0] = 0.0f; color[1] = 0.0f; color[2] = 0.0f; color[3] = 1.0f; // 黒
     size = 30.0f;
 }
 
@@ -47,10 +47,11 @@ Brush::~Brush() {
     delete mesh;
 }
 
-void Brush::setColor(uint8_t r, uint8_t g, uint8_t b) {
+void Brush::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     color[0] = r / 255.0f;
     color[1] = g / 255.0f;
     color[2] = b / 255.0f;
+    color[3] = a / 255.0f;
 }
 
 void Brush::setSize(float px) {
@@ -59,7 +60,7 @@ void Brush::setSize(float px) {
 
 void Brush::begin() {
     shader->use();
-    glUniform3f(glGetUniformLocation(shader->ID, "uColor"), color[0], color[1], color[2]);
+    glUniform4f(glGetUniformLocation(shader->ID, "uColor"), color[0], color[1], color[2], color[3]);
 }
 
 float lerp(float a, float b, float f) {
