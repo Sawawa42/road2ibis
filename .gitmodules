@@ -4,3 +4,4 @@
 [submodule "ex05/external/lodepng"]
 	path = ex05/external/lodepng
 	url = git@github.com:lvandeve/lodepng.git
+	ignore = dirty
