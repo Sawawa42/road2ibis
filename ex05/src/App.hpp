@@ -9,6 +9,7 @@
 #include "Mesh.hpp"
 #include "FrameBuffer.hpp"
 #include "Brush.hpp"
+#include "UndoSystem.hpp"
 
 struct TileCoord {
     int x, y;
@@ -64,4 +65,12 @@ class App {
 
         std::set<TileCoord> dirtyTiles;
         void checkAndSaveTiles(float startX, float startY, float endX, float endY);
+
+        std::unique_ptr<UndoSystem> undoSystem;
+
+        struct PboRequest {
+            int tileX, tileY;
+            int stepID;
+        };
+        PboRequest pboRequests[16];
 };

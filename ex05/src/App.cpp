@@ -72,6 +72,8 @@ void App::initOpenGL() {
     canvas->unbind();
 
     initPBOs();
+
+    undoSystem = std::make_unique<UndoSystem>("history.bin", tileSize);
 }
 
 void App::run() {
@@ -124,6 +126,8 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         saveImage("output.png");
     }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        undoSystem->incrementStepID();
+
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
@@ -225,6 +229,10 @@ void App::processPBO(int x, int y) {
         processPBOResults();
     }
 
+    pboRequests[pboHead].tileX = x;
+    pboRequests[pboHead].tileY = y;
+    pboRequests[pboHead].stepID = undoSystem->getCurrentStepID();
+
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboHead]);
     glReadPixels(x, y, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -239,10 +247,14 @@ void App::processPBOResults() {
         return; // 処理待ちPBOがない
     }
 
+    // glClientWaitSync (Fence)を使う方法もある？
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
 
     GLubyte* ptr = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT);
     if (ptr) {
+        PboRequest& req = pboRequests[pboTail];
+        undoSystem->pushTile(req.tileX, req.tileY, req.stepID, ptr);
+
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         pboTail = (pboTail + 1) % 16;
         pendingPBOs--;
