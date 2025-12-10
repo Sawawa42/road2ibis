@@ -10,6 +10,8 @@
 
 ```
 sudo apt-get -y install libglfw3-dev libglew-dev
+
+git submodule update --init --recursive
 ```
 
 ## memo
