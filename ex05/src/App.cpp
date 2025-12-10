@@ -90,13 +90,9 @@ void App::run() {
 
         processInput(width, height, scaleX, scaleY);
 
-        // マウス位置周辺のタイルを非同期で読み出すテスト
-        double mx, my;
-        glfwGetCursorPos(window, &mx, &my);
-        // 座標変換などの処理は必要だが、まずはテストとして適当な位置
-        processPBO((int)mx, (int)(fboSize - my));
-
         render(width, height, scaleX, scaleY);
+
+        processPBOResults();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -213,8 +209,8 @@ void App::saveImage(const char* filename) {
 }
 
 void App::initPBOs() {
-    glGenBuffers(2, pboIds); // これはSeparateという格納方式だが、Interleavedのほうがキャッシュ的にいいらしい？
-    for (int i = 0; i < 2; i++) {
+    glGenBuffers(16, pboIds); // これはSeparateという格納方式だが、Interleavedのほうがキャッシュ的にいいらしい？
+    for (int i = 0; i < 16; i++) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         // GL_STREAM_READ: GPUが書き込み、CPUが読み取りする
         glBufferData(GL_PIXEL_PACK_BUFFER, tileSize * tileSize * channels * sizeof(uint8_t), nullptr, GL_STREAM_READ);
@@ -224,26 +220,35 @@ void App::initPBOs() {
 }
 
 void App::processPBO(int x, int y) {
-    canvas->bind(); // FBOから読み取るのでバインド
+    if (pendingPBOs >= 16) {
+        // 処理待ちPBOが最大数に達している場合、結果を取得してから進める
+        processPBOResults();
+    }
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboIndex]); // 書き込み先のPBOをバインド
-
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboHead]);
     glReadPixels(x, y, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    // PBOのインデックスを進める
+    pboHead = (pboHead + 1) % 16;
+    pendingPBOs++;
+}
+
+void App::processPBOResults() {
+    if (pendingPBOs == 0) {
+        return; // 処理待ちPBOがない
+    }
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
 
     GLubyte* ptr = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT);
     if (ptr) {
-        // テスト
-        // std::cout << "R=" << (int)ptr[0] << " G=" << (int)ptr[1] << " B=" << (int)ptr[2] << " A=" << (int)ptr[3] << std::endl;
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        pboTail = (pboTail + 1) % 16;
+        pendingPBOs--;
     }
 
-    // バインド解除
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-    canvas->unbind();
-
-    // PBOのインデックスを交換
-    pboIndex = (pboIndex + 1) % 2;
-    nextPboIndex = (nextPboIndex + 1) % 2;
 }
 
 void App::checkAndSaveTiles(float startX, float startY, float endX, float endY) {

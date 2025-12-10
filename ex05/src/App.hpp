@@ -48,14 +48,11 @@ class App {
 
         void clearColorUint8(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
-        // ダブルバッファリング用に2つのPBOを用意
-        GLuint pboIds[2];
+        GLuint pboIds[16];
 
-        // 今読み出し命令を出しているPBOのインデックス
-        int pboIndex = 0;
-
-        // 次に読み出し命令を出すPBOのインデックス
-        int nextPboIndex = 1;
+        int pboHead = 0;
+        int pboTail = 0;
+        int pendingPBOs = 0;
 
         const int tileSize = 128; // px
         const int channels = 4; // RGBA
@@ -63,6 +60,7 @@ class App {
         void initPBOs();
 
         void processPBO(int x, int y);
+        void processPBOResults();
 
         std::set<TileCoord> dirtyTiles;
         void checkAndSaveTiles(float startX, float startY, float endX, float endY);
