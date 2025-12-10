@@ -19,7 +19,12 @@ in vec2 TexCoord;
 uniform sampler2D uTexture;
 out vec4 FragColor;
 void main() {
-    FragColor = texture(uTexture, TexCoord);
+    vec4 texColor = texture(uTexture, TexCoord);
+
+    vec3 bgColor = vec3(1.0, 1.0, 1.0); // 白背景
+    vec3 blendedColor = mix(bgColor, texColor.rgb, texColor.a);
+
+    FragColor = vec4(blendedColor, 1.0);
 })";
 
 App::App(int width, int height, const char* title, float size)
@@ -67,7 +72,7 @@ void App::initOpenGL() {
 
     canvas->bind();
     glViewport(0, 0, (int)fboSize, (int)fboSize);
-    clearColorUint8(255, 0, 0, 128); // 本当は透明とかが良いが、確認しやすいように着色
+    clearColorUint8(255, 255, 255, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     canvas->unbind();
 
@@ -102,26 +107,33 @@ void App::run() {
 }
 
 void App::processInput(int width, int height, float scaleX, float scaleY) {
+    static bool isEraser = false;
+
     if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) {
-        // 100pxの赤色半透明ブラシ(消しゴム代わり)
-        brush->setColor(255, 0, 0, 128);
-        brush->setSize(100.0f);
+        // 30pxの透明ブラシ(消しゴム代わり)
+        brush->setColor(0, 0, 0, 0);
+        brush->setSize(30.0f);
+        isEraser = true;
     } else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
         // 30pxの黒色ブラシ
         brush->setColor(0, 0, 0, 255);
         brush->setSize(30.0f);
+        isEraser = false;
     } else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
         // 30pxの赤色ブラシ
         brush->setColor(255, 0, 0, 255);
         brush->setSize(30.0f);
+        isEraser = false;
     } else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
         // 30pxの緑色ブラシ
         brush->setColor(0, 255, 0, 255);
         brush->setSize(30.0f);
+        isEraser = false;
     } else if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
         // 30pxの青色ブラシ
         brush->setColor(0, 0, 255, 255);
         brush->setSize(30.0f);
+        isEraser = false;
     } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         saveImage("output.png");
     }
@@ -145,6 +157,12 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         if (inside) {
             canvas->bind();
             glViewport(0, 0, (int)fboSize, (int)fboSize);
+
+            if (isEraser) {
+                glBlendFunc(GL_ONE, GL_ZERO);
+            } else {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
 
             if (!isDrawing) {
                 dirtyTiles.clear();
@@ -175,7 +193,7 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
 
 void App::render(int width, int height, float scaleX, float scaleY) {
     glViewport(0, 0, width, height);
-    clearColorUint8(255, 255, 255, 255);
+    clearColorUint8(200, 200, 200, 255);
     glClear(GL_COLOR_BUFFER_BIT);
 
     shader->use();
