@@ -181,6 +181,9 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
                 brush->drawLine(canvasX, canvasY, canvasX, canvasY, fboSize);
                 isDrawing = true;
             }
+
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
             canvas->unbind();
         }
         lastX = canvasX;

@@ -55,6 +55,9 @@ void UndoSystem::workerLoop() {
     }
 }
 
+const uint8_t TYPE_EMPTY = 0;
+const uint8_t TYPE_RAW = 1;
+
 void UndoSystem::appendToFile(const TileData& data, std::ofstream& ofs) {
     ofs.write(reinterpret_cast<const char*>(&data.stepID), sizeof(int));
     ofs.write(reinterpret_cast<const char*>(&data.tileX), sizeof(int));
