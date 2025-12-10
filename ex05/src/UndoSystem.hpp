@@ -8,11 +8,19 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <map>
 
 struct TileData {
     int tileX, tileY;
     int stepID;
     std::vector<uint8_t> pixels;
+};
+
+struct TileRecord {
+    int tileX, tileY;
+    uint8_t type; // 0: TYPE_EMPTY, 1: TYPE_RAW
+    size_t offset;
+    size_t size;
 };
 
 class UndoSystem {
@@ -24,6 +32,9 @@ class UndoSystem {
 
         int getCurrentStepID() const { return currentStepID; }
         void incrementStepID() { currentStepID++; }
+
+        std::vector<TileData> undo();
+        bool canUndo() const { return currentStepID > 0; }
 
     private:
         std::string historyFile;
@@ -40,4 +51,9 @@ class UndoSystem {
         void workerLoop();
 
         void appendToFile(const TileData& data, std::ofstream& ofs);
+
+        std::map<int, std::vector<TileRecord>> indexMap;
+        size_t currentFileOffset = 0;
+
+        TileData loadTileFromRecord(const TileRecord& record);
 };
