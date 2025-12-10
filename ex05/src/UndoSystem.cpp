@@ -59,8 +59,24 @@ const uint8_t TYPE_EMPTY = 0;
 const uint8_t TYPE_RAW = 1;
 
 void UndoSystem::appendToFile(const TileData& data, std::ofstream& ofs) {
+    bool isEmpty = true;
+    size_t dataSize = data.pixels.size() / 4;
+    for (size_t i = 0; i < dataSize; ++i) {
+        if (data.pixels[i * 4 + 3] != 0) { // Alphaチャネルが0でないピクセルがある場合
+            isEmpty = false;
+            break;;
+        }
+    }
+
     ofs.write(reinterpret_cast<const char*>(&data.stepID), sizeof(int));
     ofs.write(reinterpret_cast<const char*>(&data.tileX), sizeof(int));
     ofs.write(reinterpret_cast<const char*>(&data.tileY), sizeof(int));
-    ofs.write(reinterpret_cast<const char*>(data.pixels.data()), data.pixels.size());
+
+    if (isEmpty) {
+        ofs.write(reinterpret_cast<const char*>(&TYPE_EMPTY), sizeof(uint8_t));
+        return;
+    } else {
+        ofs.write(reinterpret_cast<const char*>(&TYPE_RAW), sizeof(uint8_t));
+        ofs.write(reinterpret_cast<const char*>(data.pixels.data()), data.pixels.size());
+    }
 }
