@@ -1,8 +1,8 @@
 NAME = tinyPaint
 CXX = c++
-CXXFLAGS = -std=c++11
+CXXFLAGS = 
 LIBS = -lglfw -lGLESv2
-SRCS = main.cpp Shader.cpp Mesh.cpp FrameBuffer.cpp Brush.cpp
+SRCS = src/main.cpp src/Shader.cpp src/Mesh.cpp src/FrameBuffer.cpp src/Brush.cpp src/App.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)

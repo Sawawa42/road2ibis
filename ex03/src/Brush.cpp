@@ -38,7 +38,7 @@ Brush::Brush() {
     mesh = new Mesh(vertices, MeshFormat::XY);
 
     // デフォルト設定
-    color[0] = 0.0f; color[1] = 0.0f; color[2] = 1.0f; // 青
+    color[0] = 0.0f; color[1] = 0.0f; color[2] = 0.0f; // 黒色
     size = 30.0f;
 }
 
