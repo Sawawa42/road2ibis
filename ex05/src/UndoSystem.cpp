@@ -1,7 +1,7 @@
 #include "UndoSystem.hpp"
 
 UndoSystem::UndoSystem(const std::string& filename, int tileSize)
-    : historyFile(filename), tileSize(tileSize), currentStepID(0), isRunning(true) {
+    : historyFile(filename), tileSize(tileSize), currentStepID(0), maxStepID(0), isRunning(true) {
 
     std::ofstream ofs(historyFile, std::ios::binary | std::ios::trunc);
     ofs.close();

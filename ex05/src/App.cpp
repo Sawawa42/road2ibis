@@ -253,6 +253,11 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         isDrawing = true;
         wasDrawing = true;
     } else {
+        if (wasDrawing && !dirtyTiles.empty()) {
+            // 描画終了時にAfterタイルを保存
+            saveAfterTiles();
+        }
+
         isDrawing = false;
         wasDrawing = false;
     }
