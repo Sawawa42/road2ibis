@@ -138,7 +138,8 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
     }
 
     static bool zPressed = false;
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+    // Setting > Accessibility > Locate PointerをONにしているとCtrlの判定が吸われるので注意
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
         if (!zPressed) {
             std::cout << "Undo requested" << std::endl;
             std::vector<TileData> restore = undoSystem->undo();
