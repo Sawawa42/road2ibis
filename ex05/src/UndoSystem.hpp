@@ -36,6 +36,8 @@ class UndoSystem {
         std::vector<TileData> undo();
         bool canUndo() const { return currentStepID > 0; }
 
+        void waitWorker();
+
     private:
         std::string historyFile;
         int tileSize;

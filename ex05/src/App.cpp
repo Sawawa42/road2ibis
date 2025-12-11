@@ -137,6 +137,30 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
     } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         saveImage("output.png");
     }
+    static bool zPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+        if (!zPressed) {
+            std::cout << "Undo requested" << std::endl;
+            std::vector<TileData> restore = undoSystem->undo();
+            if (!restore.empty()) {
+                canvas->bind();
+                for (const auto& tile: restore) {
+                    glTexSubImage2D(GL_TEXTURE_2D, 0,
+                                    tile.tileX * tileSize,
+                                    tile.tileY * tileSize,
+                                    tileSize, tileSize,
+                                    GL_RGBA, GL_UNSIGNED_BYTE,
+                                    tile.pixels.data());
+                }
+
+                canvas->unbind();
+                std::cout << "Undo performed: stepID=" << undoSystem->getCurrentStepID() << std::endl;
+            }
+            zPressed = true;
+        }
+    } else {
+        zPressed = false;
+    }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         undoSystem->incrementStepID();
 
@@ -164,14 +188,21 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             }
 
+            float pxCurrentX = (canvasX + 1.0f) / 2.0f * fboSize;
+            float pxCurrentY = (canvasY + 1.0f) / 2.0f * fboSize;
+            float pxLastX = (lastX + 1.0f) / 2.0f * fboSize;
+            float pxLastY = (lastY + 1.0f) / 2.0f * fboSize;
+
             if (!isDrawing) {
                 dirtyTiles.clear();
+                pxLastX = pxCurrentX;
+                pxLastY = pxCurrentY;
             }
 
             if (isDrawing) {
-                checkAndSaveTiles(lastX * fboSize, lastY * fboSize, canvasX * fboSize, canvasY * fboSize);
+                checkAndSaveTiles(pxLastX, pxLastY, pxCurrentX, pxCurrentY);
             } else {
-                checkAndSaveTiles(canvasX * fboSize, canvasY * fboSize, canvasX * fboSize, canvasY * fboSize);
+                checkAndSaveTiles(pxCurrentX, pxCurrentY, pxCurrentX, pxCurrentY);
             }
 
             brush->begin();
