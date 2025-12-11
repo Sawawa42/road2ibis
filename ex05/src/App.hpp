@@ -24,7 +24,7 @@ private:
     std::unique_ptr<UndoSystem> undoSystem;
 
     float canvasSize;
-    static constexpr int tileSize = 128;
+    const int tileSize = 128;
 
     // 描画状態
     bool isDrawing = false;

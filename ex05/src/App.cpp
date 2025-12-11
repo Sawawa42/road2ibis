@@ -1,4 +1,4 @@
-#include "App_new.hpp"
+#include "App.hpp"
 #include "../external/lodepng/lodepng.h"
 #include <iostream>
 #include <vector>
@@ -46,6 +46,8 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
 void App::handleKeyboardInput() {
     InputAction action = inputManager->getTriggeredAction();
 
+    static bool ctrlzPressed = false;
+    static bool ctrlyPressed = false;
     switch (action) {
         case InputAction::SetEraser:
             brush->setColor(0, 0, 0, 0);
@@ -76,7 +78,6 @@ void App::handleKeyboardInput() {
             saveImage("output.png");
             break;
         case InputAction::Undo: {
-            static bool ctrlzPressed = false;
             if (!ctrlzPressed) {
                 std::cout << "Undo requested" << std::endl;
                 std::vector<TileData> restore = undoSystem->undo();
@@ -89,7 +90,6 @@ void App::handleKeyboardInput() {
             break;
         }
         case InputAction::Redo: {
-            static bool ctrlyPressed = false;
             if (!ctrlyPressed) {
                 std::cout << "Redo requested" << std::endl;
                 std::vector<TileData> restore = undoSystem->redo();
@@ -102,6 +102,8 @@ void App::handleKeyboardInput() {
             break;
         }
         default:
+            ctrlzPressed = false;
+            ctrlyPressed = false;
             break;
     }
 }
