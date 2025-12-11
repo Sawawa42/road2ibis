@@ -1,38 +1,18 @@
-#include "Canvas.hpp"
+#include "TileSystem.hpp"
+#include "History/HistoryManager.hpp"
 #include <algorithm>
 #include <iostream>
 
-Canvas::Canvas(int size, int tileSize)
-    : size(size), tileSize(tileSize) {
-    fbo = std::make_unique<FrameBuffer>(size, size);
-
-    // キャンバスを透明で初期化
-    bind();
-    glViewport(0, 0, size, size);
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    unbind();
-
+TileSystem::TileSystem(int canvasSize, int tileSize)
+    : canvasSize(canvasSize), tileSize(tileSize) {
     initPBOs();
 }
 
-Canvas::~Canvas() {
+TileSystem::~TileSystem() {
     glDeleteBuffers(PBO_COUNT, pboIds);
 }
 
-void Canvas::bind() {
-    fbo->bind();
-}
-
-void Canvas::unbind() {
-    fbo->unbind();
-}
-
-GLuint Canvas::getTexture() const {
-    return fbo->getTexture();
-}
-
-void Canvas::initPBOs() {
+void TileSystem::initPBOs() {
     glGenBuffers(PBO_COUNT, pboIds);
     for (int i = 0; i < PBO_COUNT; i++) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
@@ -41,7 +21,7 @@ void Canvas::initPBOs() {
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
-void Canvas::markDirtyTiles(float startX, float startY, float endX, float endY, float brushRadius) {
+void TileSystem::markDirtyTiles(float startX, float startY, float endX, float endY, float brushRadius) {
     float radius = brushRadius / 2.0f + 2.0f;
 
     float minX = std::min(startX, endX) - radius;
@@ -54,7 +34,7 @@ void Canvas::markDirtyTiles(float startX, float startY, float endX, float endY, 
     int tileStartY = static_cast<int>(minY) / tileSize;
     int tileEndY = static_cast<int>(maxY) / tileSize;
 
-    int tileMaxIndex = size / tileSize - 1;
+    int tileMaxIndex = canvasSize / tileSize - 1;
     tileStartX = std::max(0, std::min(tileStartX, tileMaxIndex));
     tileEndX = std::max(0, std::min(tileEndX, tileMaxIndex));
     tileStartY = std::max(0, std::min(tileStartY, tileMaxIndex));
@@ -65,28 +45,27 @@ void Canvas::markDirtyTiles(float startX, float startY, float endX, float endY, 
             TileCoord coord = {tx, ty};
             if (dirtyTiles.find(coord) == dirtyTiles.end()) {
                 dirtyTiles.insert(coord);
-                // 新しいダーティタイルのPBOキャプチャを追加
                 pendingNewTiles.push_back(coord);
             }
         }
     }
 }
 
-void Canvas::clearDirtyTiles() {
+void TileSystem::clearDirtyTiles() {
     dirtyTiles.clear();
     pendingNewTiles.clear();
 }
 
-void Canvas::capturePendingTiles(int stepID) {
+void TileSystem::capturePendingTiles(int stepID) {
     for (const auto& coord : pendingNewTiles) {
         beginTileCapture(coord.x * tileSize, coord.y * tileSize, stepID);
     }
     pendingNewTiles.clear();
 }
 
-void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
+void TileSystem::beginTileCapture(int pixelX, int pixelY, int stepID) {
     if (pendingPBOs >= PBO_COUNT) {
-        return; // 後でprocessPendingCapturesで処理
+        return;
     }
 
     pboRequests[pboHead].tileX = pixelX;
@@ -101,29 +80,27 @@ void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
     pendingPBOs++;
 }
 
-void Canvas::processPendingCaptures(HistoryManager& historyManager) {
+void TileSystem::processPendingCaptures(HistoryManager& historyManager) {
     while (pendingPBOs > 0) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
-    
+
         GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
         if (ptr) {
             PboRequest& req = pboRequests[pboTail];
             historyManager.pushBeforeTile(req.tileX, req.tileY, req.stepID, ptr);
-    
+
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             pboTail = (pboTail + 1) % PBO_COUNT;
             pendingPBOs--;
         } else {
-            break; // マップできない場合は次フレームで再試行
+            break;
         }
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
-void Canvas::saveAfterTiles(HistoryManager& historyManager) {
-    bind();
-
+void TileSystem::saveAfterTiles(HistoryManager& historyManager) {
     std::vector<uint8_t> tilePixels(tileSize * tileSize * 4);
     int currentStepID = historyManager.getCurrentStepID();
 
@@ -134,27 +111,4 @@ void Canvas::saveAfterTiles(HistoryManager& historyManager) {
         glReadPixels(pixelX, pixelY, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, tilePixels.data());
         historyManager.pushAfterTile(pixelX, pixelY, currentStepID, tilePixels.data());
     }
-
-    unbind();
-}
-
-void Canvas::restoreTiles(const std::vector<TileData>& tiles) {
-    bind();
-    for (const auto& tile : tiles) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0,
-                        tile.tileX,
-                        tile.tileY,
-                        tileSize, tileSize,
-                        GL_RGBA, GL_UNSIGNED_BYTE,
-                        tile.pixels.data());
-    }
-    unbind();
-}
-
-std::vector<uint8_t> Canvas::readPixels() const {
-    fbo->bind();
-    std::vector<uint8_t> pixels(size * size * 4);
-    glReadPixels(0, 0, size, size, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-    fbo->unbind();
-    return pixels;
 }

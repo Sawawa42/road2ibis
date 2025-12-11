@@ -1,10 +1,11 @@
 #pragma once
 #include <GLES3/gl32.h>
-#include <memory>
 #include <set>
 #include <vector>
-#include "FrameBuffer.hpp"
-#include "HistoryManager.hpp"
+#include <cstdint>
+#include "History/HistoryTypes.hpp"
+
+class HistoryManager;
 
 struct TileCoord {
     int x, y;
@@ -17,37 +18,34 @@ struct TileCoord {
     }
 };
 
-class Canvas {
+// タイルシステム: ダーティタイル追跡とPBO非同期転送を管理
+class TileSystem {
 public:
-    Canvas(int size, int tileSize);
-    ~Canvas();
+    TileSystem(int canvasSize, int tileSize);
+    ~TileSystem();
 
-    void bind();
-    void unbind();
+    // コピー禁止
+    TileSystem(const TileSystem&) = delete;
+    TileSystem& operator=(const TileSystem&) = delete;
 
-    GLuint getTexture() const;
-    int getSize() const { return size; }
     int getTileSize() const { return tileSize; }
+    int getTileCount() const { return canvasSize / tileSize; }
 
-    // タイルシステム
+    // ダーティタイル管理
     void markDirtyTiles(float startX, float startY, float endX, float endY, float brushRadius);
     void clearDirtyTiles();
     bool hasDirtyTiles() const { return !dirtyTiles.empty(); }
+    const std::set<TileCoord>& getDirtyTiles() const { return dirtyTiles; }
 
-    // PBO非同期転送
+    // PBO非同期転送（描画前タイルキャプチャ）
     void capturePendingTiles(int stepID);
     void processPendingCaptures(HistoryManager& historyManager);
+
+    // 描画後タイル保存
     void saveAfterTiles(HistoryManager& historyManager);
 
-    // Undo/Redoタイル復元
-    void restoreTiles(const std::vector<TileData>& tiles);
-
-    // 画像保存
-    std::vector<uint8_t> readPixels() const;
-
 private:
-    std::unique_ptr<FrameBuffer> fbo;
-    int size;
+    int canvasSize;
     int tileSize;
     static constexpr int channels = 4;
 
@@ -66,7 +64,7 @@ private:
 
     // ダーティタイル管理
     std::set<TileCoord> dirtyTiles;
-    std::vector<TileCoord> pendingNewTiles; // PBOキャプチャ待ちの新規タイル
+    std::vector<TileCoord> pendingNewTiles;
 
     void initPBOs();
     void beginTileCapture(int pixelX, int pixelY, int stepID);
