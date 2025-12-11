@@ -29,6 +29,7 @@ class UndoSystem {
         ~UndoSystem();
 
         void pushTile(int tileX, int tileY, int stepID, const uint8_t* data);
+        void pushAfterTile(int tileX, int tileY, int stepID, const uint8_t* data);
 
         int getCurrentStepID() const { return currentStepID; }
         void incrementStepID() {
@@ -57,9 +58,9 @@ class UndoSystem {
         void workerLoop();
 
         void appendToFile(const TileData& data, std::ofstream& ofs);
+        void appendToFileAfter(const TileData& data, std::ofstream& ofs);
 
         std::map<int, std::vector<TileRecord>> indexMap;
+        std::map<int, std::vector<TileRecord>> afterIndexMap;
         size_t currentFileOffset = 0;
-
-        TileData loadTileFromRecord(const TileRecord& record);
 };

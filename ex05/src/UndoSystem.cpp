@@ -34,6 +34,19 @@ void UndoSystem::pushTile(int tileX, int tileY, int stepID, const uint8_t* data)
     queueCond.notify_one();
 }
 
+void UndoSystem::pushAfterTile(int tileX, int tileY, int stepID, const uint8_t* data) {
+    TileData tileData;
+    tileData.tileX = tileX;
+    tileData.tileY = tileY;
+    tileData.stepID = stepID;
+    tileData.pixels.assign(data, data + tileSize * tileSize * 4);
+
+    {
+        std::ofstream ofs(historyFile, std::ios::binary | std::ios::app);
+        appendToFileAfter(tileData, ofs);
+    }
+}
+
 void UndoSystem::workerLoop() {
     while (true) {
         TileData tileData;
@@ -103,6 +116,50 @@ void UndoSystem::appendToFile(const TileData& data, std::ofstream& ofs) {
     }
 }
 
+void UndoSystem::appendToFileAfter(const TileData& data, std::ofstream& ofs) {
+    size_t startOffset = currentFileOffset;
+
+    ofs.write(reinterpret_cast<const char*>(&data.stepID), sizeof(int));
+    ofs.write(reinterpret_cast<const char*>(&data.tileX), sizeof(int));
+    ofs.write(reinterpret_cast<const char*>(&data.tileY), sizeof(int));
+    currentFileOffset += 12;
+
+    bool isEmpty = true;
+    size_t dataSize = data.pixels.size() / 4;
+    for (size_t i = 0; i < dataSize; ++i) {
+        if (data.pixels[i * 4 + 3] != 0) { // Alphaチャネルが0でないピクセルがある場合
+            isEmpty = false;
+            break;;
+        }
+    }
+
+    TileRecord record;
+    record.tileX = data.tileX;
+    record.tileY = data.tileY;
+    record.offset = startOffset;
+
+    if (isEmpty) {
+        ofs.write(reinterpret_cast<const char*>(&TYPE_EMPTY), sizeof(uint8_t));
+        currentFileOffset += 1;
+        record.type = TYPE_EMPTY;
+        record.size = 0;
+    } else {
+        ofs.write(reinterpret_cast<const char*>(&TYPE_RAW), sizeof(uint8_t));
+        currentFileOffset += 1;
+
+        ofs.write(reinterpret_cast<const char*>(data.pixels.data()), data.pixels.size());
+        currentFileOffset += data.pixels.size();
+
+        record.type = TYPE_RAW;
+        record.size = data.pixels.size();
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        afterIndexMap[data.stepID].push_back(record);
+    }
+}
+
 std::vector<TileData> UndoSystem::undo() {
     waitWorker();
 
@@ -168,10 +225,10 @@ std::vector<TileData> UndoSystem::redo() {
     std::vector<TileRecord> records;
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        if (indexMap.find(targetStepID) == indexMap.end()) {
+        if (afterIndexMap.find(targetStepID) == afterIndexMap.end()) {
             return result;
         }
-        records = indexMap[targetStepID];
+        records = afterIndexMap[targetStepID];
 
         currentStepID++;
     }

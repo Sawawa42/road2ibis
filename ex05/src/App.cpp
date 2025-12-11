@@ -380,3 +380,20 @@ void App::checkAndSaveTiles(float startX, float startY, float endX, float endY) 
         }
     }
 }
+
+void App::saveAfterTiles() {
+    canvas->bind();
+
+    std::vector<uint8_t> tilePixels(tileSize * tileSize * 4);
+    int currentStepID = undoSystem->getCurrentStepID();
+
+    for (const auto& coord : dirtyTiles) {
+        int pixelX = coord.x * tileSize;
+        int pixelY = coord.y * tileSize;
+
+        glReadPixels(pixelX, pixelY, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, tilePixels.data());
+        undoSystem->pushAfterTile(pixelX, pixelY, currentStepID, tilePixels.data());
+    }
+
+    canvas->unbind();
+}
