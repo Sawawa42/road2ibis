@@ -107,7 +107,7 @@ std::vector<TileData> UndoSystem::undo() {
     waitWorker();
 
     std::vector<TileData> result;
-    int targetStepID = currentStepID;
+    int targetStepID = currentStepID.load();
 
     if (targetStepID <= 0) {
         return result;

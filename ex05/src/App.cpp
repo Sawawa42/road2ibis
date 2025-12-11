@@ -108,7 +108,6 @@ void App::run() {
 
 void App::processInput(int width, int height, float scaleX, float scaleY) {
     static bool isEraser = false;
-
     if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) {
         // 30pxの透明ブラシ(消しゴム代わり)
         brush->setColor(0, 0, 0, 0);
@@ -137,6 +136,7 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
     } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         saveImage("output.png");
     }
+
     static bool zPressed = false;
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
         if (!zPressed) {
@@ -161,8 +161,13 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
     } else {
         zPressed = false;
     }
+
+    static bool wasDrawing = false;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        undoSystem->incrementStepID();
+        if (!wasDrawing) {
+            // 描画開始時にステップIDをインクリメント
+            undoSystem->incrementStepID();
+        }
 
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -220,8 +225,10 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         lastX = canvasX;
         lastY = canvasY;
         isDrawing = true;
+        wasDrawing = true;
     } else {
         isDrawing = false;
+        wasDrawing = false;
     }
 }
 
