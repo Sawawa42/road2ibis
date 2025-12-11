@@ -137,10 +137,10 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
         saveImage("output.png");
     }
 
-    static bool zPressed = false;
+    static bool ctrlzPressed = false;
     // Setting > Accessibility > Locate PointerをONにしているとCtrlの判定が吸われるので注意
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
-        if (!zPressed) {
+        if (!ctrlzPressed) {
             std::cout << "Undo requested" << std::endl;
             std::vector<TileData> restore = undoSystem->undo();
             if (!restore.empty()) {
@@ -157,10 +157,35 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
                 canvas->unbind();
                 std::cout << "Undo performed: stepID=" << undoSystem->getCurrentStepID() << std::endl;
             }
-            zPressed = true;
+            ctrlzPressed = true;
         }
     } else {
-        zPressed = false;
+        ctrlzPressed = false;
+    }
+
+    static bool ctrlyPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+        if (!ctrlyPressed) {
+            std::cout << "Redo requested" << std::endl;
+            std::vector<TileData> restore = undoSystem->redo();
+            if (!restore.empty()) {
+                canvas->bind();
+                for (const auto& tile: restore) {
+                    glTexSubImage2D(GL_TEXTURE_2D, 0,
+                                    tile.tileX,
+                                    tile.tileY,
+                                    tileSize, tileSize,
+                                    GL_RGBA, GL_UNSIGNED_BYTE,
+                                    tile.pixels.data());
+                }
+
+                canvas->unbind();
+                std::cout << "Redo performed: stepID=" << undoSystem->getCurrentStepID() << std::endl;
+            }
+            ctrlyPressed = true;
+        }
+    } else {
+        ctrlyPressed = false;
     }
 
     static bool wasDrawing = false;

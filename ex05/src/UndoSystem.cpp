@@ -125,7 +125,6 @@ std::vector<TileData> UndoSystem::undo() {
 
         std::cout << "Undoing stepID " << targetStepID << " with " << records.size() << " tiles." << std::endl;
 
-        indexMap.erase(targetStepID); // redo対応ならここで削除しない
         currentStepID--;
     }
 
@@ -149,6 +148,52 @@ std::vector<TileData> UndoSystem::undo() {
             if (ifs.gcount() != static_cast<std::streamsize>(record.size)) {
                 std::cerr << "Error reading tile data at offset " << record.offset << std::endl;
             }
+        }
+        result.push_back(std::move(tile));
+    }
+
+    return result;
+}
+
+std::vector<TileData> UndoSystem::redo() {
+    waitWorker();
+    
+    std::vector<TileData> result;
+    int targetStepID = currentStepID.load() + 1;
+
+    if (targetStepID > maxStepID.load()) {
+        return result;
+    }
+
+    std::vector<TileRecord> records;
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        if (indexMap.find(targetStepID) == indexMap.end()) {
+            return result;
+        }
+        records = indexMap[targetStepID];
+
+        currentStepID++;
+    }
+
+    std::ifstream ifs(historyFile, std::ios::binary);
+    if (!ifs.is_open()) {
+        return result;
+    }
+
+    for (const auto& record : records) {
+        TileData tile;
+        tile.tileX = record.tileX;
+        tile.tileY = record.tileY;
+        tile.stepID = targetStepID;
+
+        if (record.type == TYPE_EMPTY) {
+            tile.pixels.resize(tileSize * tileSize * 4, 0);
+        } else if (record.type == TYPE_RAW) {
+            tile.pixels.resize(tileSize * tileSize * 4);
+            size_t dataOffset = record.offset + 12 + 1;
+            ifs.seekg(dataOffset);
+            ifs.read(reinterpret_cast<char*>(tile.pixels.data()), record.size);
         }
         result.push_back(std::move(tile));
     }
