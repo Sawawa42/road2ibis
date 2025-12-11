@@ -130,6 +130,9 @@ std::vector<TileData> UndoSystem::undo() {
     }
 
     std::ifstream ifs(historyFile, std::ios::binary);
+    if (!ifs.is_open()) {
+        return result;
+    }
     for (const auto& record : records) {
         TileData tile;
         tile.tileX = record.tileX;
@@ -140,7 +143,8 @@ std::vector<TileData> UndoSystem::undo() {
             tile.pixels.resize(tileSize * tileSize * 4, 0);
         } else if (record.type == TYPE_RAW) {
             tile.pixels.resize(tileSize * tileSize * 4);
-            ifs.seekg(record.offset + 12 + 1);
+            size_t dataOffset = record.offset + 12 + 1;
+            ifs.seekg(dataOffset);
             ifs.read(reinterpret_cast<char*>(tile.pixels.data()), record.size);
             if (ifs.gcount() != static_cast<std::streamsize>(record.size)) {
                 std::cerr << "Error reading tile data at offset " << record.offset << std::endl;

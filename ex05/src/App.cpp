@@ -146,8 +146,8 @@ void App::processInput(int width, int height, float scaleX, float scaleY) {
                 canvas->bind();
                 for (const auto& tile: restore) {
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
-                                    tile.tileX * tileSize,
-                                    tile.tileY * tileSize,
+                                    tile.tileX,
+                                    tile.tileY,
                                     tileSize, tileSize,
                                     GL_RGBA, GL_UNSIGNED_BYTE,
                                     tile.pixels.data());
