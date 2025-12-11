@@ -1,77 +1,40 @@
 #pragma once
-#include <GLES3/gl32.h>
-#include <GLFW/glfw3.h>
-#include <memory> // unique_ptr
-#include <set>
-#include <algorithm>
-
-#include "Shader.hpp"
-#include "Mesh.hpp"
-#include "FrameBuffer.hpp"
+#include <memory>
+#include "Window.hpp"
+#include "InputManager.hpp"
+#include "Canvas.hpp"
+#include "Renderer.hpp"
 #include "Brush.hpp"
 #include "UndoSystem.hpp"
 
-struct TileCoord {
-    int x, y;
-
-    bool operator<(const TileCoord& other) const {
-        if (x != other.x) {
-            return x < other.x;
-        }
-        return y < other.y;
-    }
-};
-
 class App {
-    public:
-        App(int width, int height, const char* title, float size);
-        ~App();
+public:
+    App(int width, int height, const char* title, float canvasSize);
+    ~App() = default;
 
-        void run();
+    void run();
+    void saveImage(const char* filename);
 
-        void saveImage(const char* filename);
+private:
+    std::unique_ptr<Window> window;
+    std::unique_ptr<InputManager> inputManager;
+    std::unique_ptr<Canvas> canvas;
+    std::unique_ptr<Renderer> renderer;
+    std::unique_ptr<Brush> brush;
+    std::unique_ptr<UndoSystem> undoSystem;
 
-    private:
-        GLFWwindow* window;
+    float canvasSize;
+    static constexpr int tileSize = 128;
 
-        std::unique_ptr<Shader> shader;
-        std::unique_ptr<Mesh> mesh;
-        std::unique_ptr<FrameBuffer> canvas;
-        std::unique_ptr<Brush> brush;
+    // 描画状態
+    bool isDrawing = false;
+    bool wasDrawing = false;
+    bool isEraser = false;
+    float lastX = 0.0f;
+    float lastY = 0.0f;
 
-        float fboSize;
-        bool isDrawing;
-        float lastX, lastY;
-
-        void initOpenGL();
-        void processInput(int width, int height, float scaleX, float scaleY);
-        void render(int width, int height, float scaleX, float scaleY);
-
-        void clearColorUint8(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-
-        GLuint pboIds[16];
-
-        int pboHead = 0;
-        int pboTail = 0;
-        int pendingPBOs = 0;
-
-        const int tileSize = 128; // px
-        const int channels = 4; // RGBA
-
-        void initPBOs();
-
-        void processPBO(int x, int y);
-        void processPBOResults();
-
-        std::set<TileCoord> dirtyTiles;
-        void checkAndSaveTiles(float startX, float startY, float endX, float endY);
-        void saveAfterTiles();
-
-        std::unique_ptr<UndoSystem> undoSystem;
-
-        struct PboRequest {
-            int tileX, tileY;
-            int stepID;
-        };
-        PboRequest pboRequests[16];
+    void processInput(int width, int height, float scaleX, float scaleY);
+    void handleKeyboardInput();
+    void handleMouseInput(int width, int height, float scaleX, float scaleY);
+    void render(int width, int height, float scaleX, float scaleY);
 };

@@ -2,7 +2,18 @@ NAME = tinyPaint
 CXX = c++
 CXXFLAGS = -Isrc -Iexternal/lodepng
 LIBS = -lglfw -lGLESv2
-SRCS = src/main.cpp src/Shader.cpp src/Mesh.cpp src/FrameBuffer.cpp src/Brush.cpp src/App.cpp src/UndoSystem.cpp external/lodepng/lodepng.cpp
+SRCS = src/main.cpp \
+	src/Shader.cpp \
+	src/Mesh.cpp \
+	src/FrameBuffer.cpp \
+	src/Brush.cpp \
+	src/App.cpp \
+	src/UndoSystem.cpp \
+	src/Canvas.cpp \
+	src/InputManager.cpp \
+	src/Renderer.cpp \
+	src/Window.cpp \
+	external/lodepng/lodepng.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
