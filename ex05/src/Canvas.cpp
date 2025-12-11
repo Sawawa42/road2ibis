@@ -102,20 +102,18 @@ void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
 }
 
 void Canvas::processPendingCaptures(UndoSystem& undoSystem) {
-    if (pendingPBOs == 0) {
-        return;
-    }
-
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
-
-    GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
-    if (ptr) {
-        PboRequest& req = pboRequests[pboTail];
-        undoSystem.pushTile(req.tileX, req.tileY, req.stepID, ptr);
-
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        pboTail = (pboTail + 1) % PBO_COUNT;
-        pendingPBOs--;
+    while (pendingPBOs > 0) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
+    
+        GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
+        if (ptr) {
+            PboRequest& req = pboRequests[pboTail];
+            undoSystem.pushTile(req.tileX, req.tileY, req.stepID, ptr);
+    
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            pboTail = (pboTail + 1) % PBO_COUNT;
+            pendingPBOs--;
+        }
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);

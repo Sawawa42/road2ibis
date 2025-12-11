@@ -52,7 +52,7 @@ private:
     static constexpr int channels = 4;
 
     // PBO管理
-    static constexpr int PBO_COUNT = 16;
+    static constexpr int PBO_COUNT = 128;
     GLuint pboIds[PBO_COUNT];
     int pboHead = 0;
     int pboTail = 0;
