@@ -55,10 +55,10 @@ void UndoSystem::incrementStepID() {
     {
         std::lock_guard<std::mutex> lock(queueMutex);
 
-        size_t truncateOffset = currentFileOffset;
+        size_t truncateOffset = 0;
 
         for (const auto& entry: indexMap) {
-            if (entry.first <= newStepID) {
+            if (entry.first < newStepID) {
                 for (const auto& record: entry.second) {
                     size_t endOffset = record.offset + 12 + 1;
                     if (record.type == TYPE_RAW) {
@@ -70,7 +70,7 @@ void UndoSystem::incrementStepID() {
         }
 
         for (const auto& entry: afterIndexMap) {
-            if (entry.first <= newStepID) {
+            if (entry.first < newStepID) {
                 for (const auto& record: entry.second) {
                     size_t endOffset = record.offset + 12 + 1;
                     if (record.type == TYPE_RAW) {
@@ -83,7 +83,7 @@ void UndoSystem::incrementStepID() {
 
         auto it = indexMap.begin();
         while (it != indexMap.end()) {
-            if (it->first > newStepID) {
+            if (it->first >= newStepID) {
                 it = indexMap.erase(it);
             } else {
                 ++it;
@@ -92,7 +92,7 @@ void UndoSystem::incrementStepID() {
 
         auto afterIt = afterIndexMap.begin();
         while (afterIt != afterIndexMap.end()) {
-            if (afterIt->first > newStepID) {
+            if (afterIt->first >= newStepID) {
                 afterIt = afterIndexMap.erase(afterIt);
             } else {
                 ++afterIt;
@@ -104,7 +104,6 @@ void UndoSystem::incrementStepID() {
 
     std::ofstream ofs(historyFile, std::ios::binary | std::ios::in | std::ios::out);
     if (ofs.is_open()) {
-        ofs.seekp(currentFileOffset);
         ofs.close();
         truncate(historyFile.c_str(), currentFileOffset);
     }
