@@ -2,10 +2,10 @@
 #include <memory>
 #include "Window.hpp"
 #include "InputManager.hpp"
-#include "Canvas.hpp"
-#include "Renderer.hpp"
-#include "Brush.hpp"
-#include "HistoryManager.hpp"
+#include "Rendering/Canvas.hpp"
+#include "Rendering/Renderer.hpp"
+#include "Tools/Brush.hpp"
+#include "History/HistoryManager.hpp"
 
 class App {
 public:

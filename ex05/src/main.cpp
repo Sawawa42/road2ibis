@@ -1,4 +1,4 @@
-#include "App.hpp"
+#include "Core/App.hpp"
 
 int main() {
     App app(800, 600, "tinyPaint", 4096.0f);

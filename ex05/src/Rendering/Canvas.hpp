@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "Graphics/FrameBuffer.hpp"
-#include "LayerTexture.hpp"
+#include "Graphics/LayerTexture.hpp"
 #include "TileSystem.hpp"
 #include "History/HistoryTypes.hpp"
 

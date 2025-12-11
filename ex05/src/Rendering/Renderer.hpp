@@ -1,8 +1,8 @@
 #pragma once
 #include <GLES3/gl32.h>
 #include <memory>
-#include "Shader.hpp"
-#include "Mesh.hpp"
+#include "Graphics/Shader.hpp"
+#include "Graphics/Mesh.hpp"
 
 class Renderer {
 public:

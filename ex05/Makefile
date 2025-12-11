@@ -10,13 +10,13 @@ SRCS = src/main.cpp \
 	src/History/HistoryWorker.cpp \
 	src/History/HistoryManager.cpp \
 	src/Graphics/FrameBuffer.cpp \
+	src/Graphics/LayerTexture.cpp \
 	src/Graphics/Mesh.cpp \
 	src/Graphics/Shader.cpp \
+	src/Rendering/Canvas.cpp \
+	src/Rendering/Renderer.cpp \
+	src/Rendering/TileSystem.cpp \
 	src/Tools/Brush.cpp \
-	src/LayerTexture.cpp \
-	src/TileSystem.cpp \
-	src/Canvas.cpp \
-	src/Renderer.cpp \
 	external/lodepng/lodepng.cpp
 OBJS = $(SRCS:.cpp=.o)
 

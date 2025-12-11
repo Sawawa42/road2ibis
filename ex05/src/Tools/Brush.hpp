@@ -2,8 +2,8 @@
 #include <GLES3/gl32.h>
 #include <vector>
 #include <cmath>
-#include "Shader.hpp"
-#include "Mesh.hpp"
+#include "Graphics/Shader.hpp"
+#include "Graphics/Mesh.hpp"
 
 class Brush {
     public:
