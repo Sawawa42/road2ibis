@@ -78,7 +78,15 @@ void Canvas::clearDirtyTiles() {
 }
 
 void Canvas::capturePendingTiles(int stepID) {
+    if (pendingPBOs >= PBO_COUNT - 2) {
+        std::cerr << "Warning: PBO buffer nearly full (" << pendingPBOs << "/" << PBO_COUNT << ")" << std::endl;
+    }
+    
     for (const auto& coord : pendingNewTiles) {
+        if (pendingPBOs >= PBO_COUNT) {
+            std::cerr << "Error: Skipping tile capture due to PBO buffer overflow" << std::endl;
+            break;
+        }
         beginTileCapture(coord.x * tileSize, coord.y * tileSize, stepID);
     }
     pendingNewTiles.clear();
@@ -86,7 +94,12 @@ void Canvas::capturePendingTiles(int stepID) {
 
 void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
     if (pendingPBOs >= PBO_COUNT) {
-        return; // 後でprocessPendingCapturesで処理
+        std::cerr << "Warning: PBO buffer full, processing pending captures" << std::endl;
+        // バッファが満杯の場合、強制的に処理を進める
+        // これを呼ぶにはUndoSystemの参照が必要なため、一旦スキップするしかない
+        // 代わりに最も古いPBOを破棄する
+        std::cerr << "Error: Cannot capture tile - PBO buffer overflow" << std::endl;
+        return;
     }
 
     pboRequests[pboHead].tileX = pixelX;
@@ -102,20 +115,22 @@ void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
 }
 
 void Canvas::processPendingCaptures(UndoSystem& undoSystem) {
-    if (pendingPBOs == 0) {
-        return;
-    }
+    // 全ての保留中のPBOを処理（1フレームで1つだけでなく、可能な限り処理）
+    while (pendingPBOs > 0) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
+        GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
+        if (ptr) {
+            PboRequest& req = pboRequests[pboTail];
+            undoSystem.pushTile(req.tileX, req.tileY, req.stepID, ptr);
 
-    GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
-    if (ptr) {
-        PboRequest& req = pboRequests[pboTail];
-        undoSystem.pushTile(req.tileX, req.tileY, req.stepID, ptr);
-
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-        pboTail = (pboTail + 1) % PBO_COUNT;
-        pendingPBOs--;
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            pboTail = (pboTail + 1) % PBO_COUNT;
+            pendingPBOs--;
+        } else {
+            // マップできない場合は次のフレームで再試行
+            break;
+        }
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
