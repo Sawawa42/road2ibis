@@ -5,7 +5,7 @@
 #include "Canvas.hpp"
 #include "Renderer.hpp"
 #include "Brush.hpp"
-#include "UndoSystem.hpp"
+#include "HistoryManager.hpp"
 
 class App {
 public:
@@ -21,7 +21,7 @@ private:
     std::unique_ptr<Canvas> canvas;
     std::unique_ptr<Renderer> renderer;
     std::unique_ptr<Brush> brush;
-    std::unique_ptr<UndoSystem> undoSystem;
+    std::unique_ptr<HistoryManager> historyManager;
 
     float canvasSize;
     const int tileSize = 128;

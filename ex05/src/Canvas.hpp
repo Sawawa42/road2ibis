@@ -4,7 +4,7 @@
 #include <set>
 #include <vector>
 #include "FrameBuffer.hpp"
-#include "UndoSystem.hpp"
+#include "HistoryManager.hpp"
 
 struct TileCoord {
     int x, y;
@@ -36,8 +36,8 @@ public:
 
     // PBO非同期転送
     void capturePendingTiles(int stepID);
-    void processPendingCaptures(UndoSystem& undoSystem);
-    void saveAfterTiles(UndoSystem& undoSystem);
+    void processPendingCaptures(HistoryManager& historyManager);
+    void saveAfterTiles(HistoryManager& historyManager);
 
     // Undo/Redoタイル復元
     void restoreTiles(const std::vector<TileData>& tiles);

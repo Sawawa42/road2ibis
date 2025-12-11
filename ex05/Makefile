@@ -3,16 +3,18 @@ CXX = c++
 CXXFLAGS = -Isrc -Iexternal/lodepng
 LIBS = -lglfw -lGLESv2
 SRCS = src/main.cpp \
-	src/Shader.cpp \
-	src/Mesh.cpp \
-	src/FrameBuffer.cpp \
-	src/Brush.cpp \
-	src/App.cpp \
-	src/UndoSystem.cpp \
+	src/Core/App.cpp \
+	src/Core/InputManager.cpp \
+	src/Core/Window.cpp \
+	src/History/HistoryStorage.cpp \
+	src/History/HistoryWorker.cpp \
+	src/History/HistoryManager.cpp \
+	src/Graphics/FrameBuffer.cpp \
+	src/Graphics/Mesh.cpp \
+	src/Graphics/Shader.cpp \
+	src/Tools/Brush.cpp \
 	src/Canvas.cpp \
-	src/InputManager.cpp \
 	src/Renderer.cpp \
-	src/Window.cpp \
 	external/lodepng/lodepng.cpp
 OBJS = $(SRCS:.cpp=.o)
 

@@ -11,7 +11,7 @@ App::App(int width, int height, const char* title, float canvasSize)
     canvas = std::make_unique<Canvas>(static_cast<int>(canvasSize), tileSize);
     renderer = std::make_unique<Renderer>();
     brush = std::make_unique<Brush>();
-    undoSystem = std::make_unique<UndoSystem>("history.bin", tileSize);
+    historyManager = std::make_unique<HistoryManager>("history.bin", tileSize);
 }
 
 void App::run() {
@@ -31,7 +31,7 @@ void App::run() {
         inputManager->update();
         processInput(width, height, scaleX, scaleY);
         render(width, height, scaleX, scaleY);
-        canvas->processPendingCaptures(*undoSystem);
+        canvas->processPendingCaptures(*historyManager);
 
         window->swapBuffers();
         window->pollEvents();
@@ -80,10 +80,10 @@ void App::handleKeyboardInput() {
         case InputAction::Undo: {
             if (!ctrlzPressed) {
                 std::cout << "Undo requested" << std::endl;
-                std::vector<TileData> restore = undoSystem->undo();
+                std::vector<TileData> restore = historyManager->undo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Undo performed: stepID=" << undoSystem->getCurrentStepID() << std::endl;
+                    std::cout << "Undo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlzPressed = true;
             }
@@ -92,10 +92,10 @@ void App::handleKeyboardInput() {
         case InputAction::Redo: {
             if (!ctrlyPressed) {
                 std::cout << "Redo requested" << std::endl;
-                std::vector<TileData> restore = undoSystem->redo();
+                std::vector<TileData> restore = historyManager->redo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Redo performed: stepID=" << undoSystem->getCurrentStepID() << std::endl;
+                    std::cout << "Redo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlyPressed = true;
             }
@@ -113,7 +113,7 @@ void App::handleMouseInput(int width, int height, float scaleX, float scaleY) {
 
     if (mouse.leftPressed) {
         if (mouse.leftJustPressed) {
-            undoSystem->incrementStepID();
+            historyManager->incrementStepID();
             canvas->clearDirtyTiles();
         }
 
@@ -152,7 +152,7 @@ void App::handleMouseInput(int width, int height, float scaleX, float scaleY) {
                 pxCurrentX, pxCurrentY, brushRadius);
 
             // ダーティタイルのPBOキャプチャを開始
-            canvas->capturePendingTiles(undoSystem->getCurrentStepID());
+            canvas->capturePendingTiles(historyManager->getCurrentStepID());
 
             brush->begin();
             if (isDrawing) {
@@ -171,7 +171,7 @@ void App::handleMouseInput(int width, int height, float scaleX, float scaleY) {
         wasDrawing = true;
     } else {
         if (wasDrawing && canvas->hasDirtyTiles()) {
-            canvas->saveAfterTiles(*undoSystem);
+            canvas->saveAfterTiles(*historyManager);
         }
         isDrawing = false;
         wasDrawing = false;

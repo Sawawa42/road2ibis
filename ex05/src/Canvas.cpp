@@ -101,36 +101,38 @@ void Canvas::beginTileCapture(int pixelX, int pixelY, int stepID) {
     pendingPBOs++;
 }
 
-void Canvas::processPendingCaptures(UndoSystem& undoSystem) {
+void Canvas::processPendingCaptures(HistoryManager& historyManager) {
     while (pendingPBOs > 0) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboTail]);
     
         GLubyte* ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, tileSize * tileSize * channels, GL_MAP_READ_BIT));
         if (ptr) {
             PboRequest& req = pboRequests[pboTail];
-            undoSystem.pushTile(req.tileX, req.tileY, req.stepID, ptr);
+            historyManager.pushBeforeTile(req.tileX, req.tileY, req.stepID, ptr);
     
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             pboTail = (pboTail + 1) % PBO_COUNT;
             pendingPBOs--;
+        } else {
+            break; // マップできない場合は次フレームで再試行
         }
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
-void Canvas::saveAfterTiles(UndoSystem& undoSystem) {
+void Canvas::saveAfterTiles(HistoryManager& historyManager) {
     bind();
 
     std::vector<uint8_t> tilePixels(tileSize * tileSize * 4);
-    int currentStepID = undoSystem.getCurrentStepID();
+    int currentStepID = historyManager.getCurrentStepID();
 
     for (const auto& coord : dirtyTiles) {
         int pixelX = coord.x * tileSize;
         int pixelY = coord.y * tileSize;
 
         glReadPixels(pixelX, pixelY, tileSize, tileSize, GL_RGBA, GL_UNSIGNED_BYTE, tilePixels.data());
-        undoSystem.pushAfterTile(pixelX, pixelY, currentStepID, tilePixels.data());
+        historyManager.pushAfterTile(pixelX, pixelY, currentStepID, tilePixels.data());
     }
 
     unbind();
