@@ -1,4 +1,5 @@
 #include "UndoSystem.hpp"
+#include <unistd.h>
 
 UndoSystem::UndoSystem(const std::string& filename, int tileSize)
     : historyFile(filename), tileSize(tileSize), currentStepID(0), maxStepID(0), isRunning(true) {
@@ -47,6 +48,70 @@ void UndoSystem::pushAfterTile(int tileX, int tileY, int stepID, const uint8_t* 
     }
 }
 
+void UndoSystem::incrementStepID() {
+    currentStepID++;
+    int newStepID = currentStepID.load();
+
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+
+        size_t truncateOffset = currentFileOffset;
+
+        for (const auto& entry: indexMap) {
+            if (entry.first <= newStepID) {
+                for (const auto& record: entry.second) {
+                    size_t endOffset = record.offset + 12 + 1;
+                    if (record.type == TYPE_RAW) {
+                        endOffset += record.size;
+                    }
+                    truncateOffset = std::max(truncateOffset, endOffset);
+                }
+            }
+        }
+
+        for (const auto& entry: afterIndexMap) {
+            if (entry.first <= newStepID) {
+                for (const auto& record: entry.second) {
+                    size_t endOffset = record.offset + 12 + 1;
+                    if (record.type == TYPE_RAW) {
+                        endOffset += record.size;
+                    }
+                    truncateOffset = std::max(truncateOffset, endOffset);
+                }
+            }
+        }
+
+        auto it = indexMap.begin();
+        while (it != indexMap.end()) {
+            if (it->first > newStepID) {
+                it = indexMap.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        auto afterIt = afterIndexMap.begin();
+        while (afterIt != afterIndexMap.end()) {
+            if (afterIt->first > newStepID) {
+                afterIt = afterIndexMap.erase(afterIt);
+            } else {
+                ++afterIt;
+            }
+        }
+
+        currentFileOffset = truncateOffset;
+    }
+
+    std::ofstream ofs(historyFile, std::ios::binary | std::ios::in | std::ios::out);
+    if (ofs.is_open()) {
+        ofs.seekp(currentFileOffset);
+        ofs.close();
+        truncate(historyFile.c_str(), currentFileOffset);
+    }
+
+    maxStepID.store(newStepID);
+}
+
 void UndoSystem::workerLoop() {
     while (true) {
         TileData tileData;
@@ -68,9 +133,6 @@ void UndoSystem::workerLoop() {
         }
     }
 }
-
-const uint8_t TYPE_EMPTY = 0;
-const uint8_t TYPE_RAW = 1;
 
 void UndoSystem::appendToFile(const TileData& data, std::ofstream& ofs) {
     size_t startOffset = currentFileOffset;

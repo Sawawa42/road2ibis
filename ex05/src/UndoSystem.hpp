@@ -32,10 +32,7 @@ class UndoSystem {
         void pushAfterTile(int tileX, int tileY, int stepID, const uint8_t* data);
 
         int getCurrentStepID() const { return currentStepID; }
-        void incrementStepID() {
-            currentStepID++;
-            maxStepID.store(currentStepID.load());
-        }
+        void incrementStepID();
 
         std::vector<TileData> undo();
         std::vector<TileData> redo();
@@ -43,6 +40,9 @@ class UndoSystem {
         void waitWorker();
 
     private:
+        const uint8_t TYPE_EMPTY = 0;
+        const uint8_t TYPE_RAW = 1;
+
         std::string historyFile;
         int tileSize;
         std::atomic<int> currentStepID;
