@@ -171,16 +171,7 @@ void App::handleMouseInput(int width, int height, float scaleX, float scaleY) {
         wasDrawing = true;
     } else {
         if (wasDrawing && canvas->hasDirtyTiles()) {
-            // ストローク終了時、PBOの処理を完全に終わらせてからAfterタイルを保存
-            std::cout << "Stroke ended, waiting for PBO completion..." << std::endl;
-            
-            // すべてのPBOを処理
-            canvas->processPendingCaptures(*undoSystem);
-            
-            // 描画後のタイルを保存
             canvas->saveAfterTiles(*undoSystem);
-            
-            std::cout << "After-tiles saved for stepID=" << undoSystem->getCurrentStepID() << std::endl;
         }
         isDrawing = false;
         wasDrawing = false;
