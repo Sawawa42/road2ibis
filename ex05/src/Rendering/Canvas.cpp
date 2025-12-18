@@ -42,9 +42,7 @@ bool Canvas::hasDirtyTiles() const {
 }
 
 void Canvas::capturePendingTiles(int stepID) {
-    bind();
     tileSystem->capturePendingTiles(stepID);
-    unbind();
 }
 
 void Canvas::processPendingCaptures(HistoryManager& historyManager) {
