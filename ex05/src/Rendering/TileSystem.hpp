@@ -37,7 +37,7 @@ public:
     bool hasDirtyTiles() const { return !dirtyTiles.empty(); }
     const std::set<TileCoord>& getDirtyTiles() const { return dirtyTiles; }
 
-    // PBO非同期転送（描画前タイルキャプチャ）
+    // PBO非同期転送(描画前タイルキャプチャ)
     void capturePendingTiles(int stepID);
     void processPendingCaptures(HistoryManager& historyManager);
 

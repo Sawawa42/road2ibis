@@ -42,7 +42,7 @@ private:
     MouseState mouseState;
     bool prevLeftPressed = false;
 
-    // キー状態管理（トリガー検出用）
+    // キー状態管理(トリガー検出用)
     std::unordered_map<int, bool> prevKeyState;
 
     bool isKeyTriggered(int key);

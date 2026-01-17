@@ -27,7 +27,7 @@ public:
     // キューが空になるまで待機
     void waitUntilEmpty();
 
-    // 処理完了したレコードを取得（コールバック経由で通知）
+    // 処理完了したレコードを取得(コールバック経由で通知)
     using RecordCallback = std::function<void(int stepID, const TileRecord&)>;
     void setRecordCallback(RecordCallback callback) { recordCallback = callback; }
 

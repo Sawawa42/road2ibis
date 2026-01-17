@@ -12,7 +12,7 @@ Canvas::Canvas(int size, int tileSize)
     // タイルシステムを初期化
     tileSystem = std::make_unique<TileSystem>(size, tileSize);
 
-    // キャンバスを白（透明）で初期化
+    // キャンバスを白(透明)で初期化
     layerTexture->clear(1.0f, 1.0f, 1.0f, 0.0f);
 }
 

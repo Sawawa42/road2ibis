@@ -5,7 +5,7 @@
 
 HistoryStorage::HistoryStorage(const std::string& filename, int tileSize)
     : filename(filename), tileSize(tileSize), currentOffset(0) {
-    // ファイルを初期化（空にする）
+    // ファイルを初期化(空にする)
     clear();
 }
 

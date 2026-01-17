@@ -11,7 +11,6 @@ void main() {
 })";
 
 const char* brushFragmentShaderSource = R"(#version 460 core
-precision mediump float;
 uniform vec4 uColor;
 out vec4 FragColor;
 void main() {

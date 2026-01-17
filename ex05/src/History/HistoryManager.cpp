@@ -38,7 +38,7 @@ void HistoryManager::pushAfterTile(int tileX, int tileY, int stepID, const uint8
     tileData.stepID = stepID;
     tileData.pixels.assign(data, data + tileSize * tileSize * 4);
 
-    // 同期的に書き込み（ストローク終了時なので即時保存）
+    // 同期的に書き込み(ストローク終了時なので即時保存)
     TileRecord record = storage->writeTile(tileData);
 
     {

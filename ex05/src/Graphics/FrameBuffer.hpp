@@ -12,7 +12,7 @@ public:
     // 内部でテクスチャを作成
     FrameBuffer(int w, int h);
 
-    // 外部テクスチャをアタッチ（テクスチャは所有しない）
+    // 外部テクスチャをアタッチ(テクスチャは所有しない)
     FrameBuffer(GLuint externalTexture);
 
     ~FrameBuffer();

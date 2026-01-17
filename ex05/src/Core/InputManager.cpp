@@ -32,9 +32,6 @@ bool InputManager::isCtrlPressed() const {
 }
 
 InputAction InputManager::getTriggeredAction() const {
-    // Note: const版なのでprevKeyStateを更新しない簡易実装
-    // トリガー検出は別途管理が必要
-
     if (isCtrlPressed()) {
         if (isKeyPressed(GLFW_KEY_Z)) {
             return InputAction::Undo;

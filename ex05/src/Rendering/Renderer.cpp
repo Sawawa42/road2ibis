@@ -12,7 +12,6 @@ void main() {
 })";
 
 const char* fragmentShaderSource = R"(#version 460 core
-precision mediump float;
 in vec2 TexCoord;
 uniform sampler2D uTexture;
 out vec4 FragColor;
