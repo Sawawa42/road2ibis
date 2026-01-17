@@ -1,7 +1,7 @@
 NAME = tinyPaint
 CXX = c++
 CXXFLAGS = -std=c++11
-LIBS = -lglfw -lGLESv2
+LIBS = -lglfw -lGLEW -lGL
 SRCS = main.cpp Shader.cpp Mesh.cpp
 OBJS = $(SRCS:.cpp=.o)
 

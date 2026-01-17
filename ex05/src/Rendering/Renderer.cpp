@@ -1,7 +1,7 @@
 #include "Renderer.hpp"
 #include <vector>
 
-const char* vertexShaderSource = R"(#version 300 es
+const char* vertexShaderSource = R"(#version 460 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
 out vec2 TexCoord;
@@ -11,7 +11,7 @@ void main() {
     TexCoord = aTexCoord;
 })";
 
-const char* fragmentShaderSource = R"(#version 300 es
+const char* fragmentShaderSource = R"(#version 460 core
 precision mediump float;
 in vec2 TexCoord;
 uniform sampler2D uTexture;

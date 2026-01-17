@@ -1,7 +1,7 @@
 NAME = tinyPaint
 CXX = c++
 CXXFLAGS = -Isrc -Iexternal/lodepng
-LIBS = -lglfw -lGLESv2
+LIBS = -lglfw -lGLEW -lGL
 SRCS = src/main.cpp \
 	src/Core/App.cpp \
 	src/Core/InputManager.cpp \

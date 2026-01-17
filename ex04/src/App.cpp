@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-const char* vertexShaderSource = R"(#version 300 es
+const char* vertexShaderSource = R"(#version 460 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
 out vec2 TexCoord;
@@ -13,8 +13,7 @@ void main() {
     TexCoord = aTexCoord;
 })";
 
-const char* fragmentShaderSource = R"(#version 300 es
-precision mediump float;
+const char* fragmentShaderSource = R"(#version 460 core
 in vec2 TexCoord;
 uniform sampler2D uTexture;
 out vec4 FragColor;
@@ -28,9 +27,9 @@ App::App(int width, int height, const char* title, float size)
     if (!glfwInit()) {
         exit(-1);
     }
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 
     window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window) {
@@ -38,6 +37,8 @@ App::App(int width, int height, const char* title, float size)
         exit(-1);
     }
     glfwMakeContextCurrent(window);
+
+    glewInit();
 
     initOpenGL();
 }
