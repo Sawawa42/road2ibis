@@ -1,5 +1,5 @@
 #pragma once
-#include <GLES3/gl32.h>
+#include <GL/glew.h>
 #include <memory>
 #include "Graphics/Shader.hpp"
 #include "Graphics/Mesh.hpp"
