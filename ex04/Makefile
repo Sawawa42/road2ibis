@@ -1,7 +1,7 @@
 NAME = tinyPaint
 CXX = c++
 CXXFLAGS = -Isrc -Iexternal/lodepng
-LIBS = -lglfw -lGLESv2
+LIBS = -lglfw -lGLEW -lGL
 SRCS = src/main.cpp src/Shader.cpp src/Mesh.cpp src/FrameBuffer.cpp src/Brush.cpp src/App.cpp external/lodepng/lodepng.cpp
 OBJS = $(SRCS:.cpp=.o)
 
