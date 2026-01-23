@@ -1,6 +1,48 @@
 #include "Shader.hpp"
 
-Shader::Shader(const char* vertexSource, const char* fragmentSource) {
+Shader::Shader(const char* vertexSource, const char* fragmentSource, const std::string& cacheFilePath) {
+    bool loadSuccess = loadFromBinary(cacheFilePath);
+
+    if (!loadSuccess) {
+        compileFromSource(vertexSource, fragmentSource);
+        saveBinary(cacheFilePath);
+    }
+}
+
+bool Shader::loadFromBinary(const std::string& cacheFilePath) {
+    std::ifstream ifs(cacheFilePath, std::ios::binary);
+
+    ID = glCreateProgram();
+    
+    if (ifs.is_open()) {
+        GLenum format;
+        GLsizei length;
+
+        ifs.read(reinterpret_cast<char *>(&format), sizeof(format));
+        ifs.read(reinterpret_cast<char *>(&length), sizeof(length));
+
+        if (length > 0) {
+            std::vector<char> buffer(length);
+            ifs.read(buffer.data(), length);
+
+            glProgramBinary(ID, format, buffer.data(), length);
+
+            GLint ok;
+            glGetProgramiv(ID, GL_LINK_STATUS, &ok);
+
+            if (ok) {
+                std::cout << "Successfully loaded program from binary cache: " << cacheFilePath << std::endl;
+                ifs.close();
+                return true;
+            }
+        }
+        ifs.close();
+    }
+    std::cout << "Cache file not found or unreadable. Compiling from source..." << std::endl;
+    return false;
+}
+
+void Shader::compileFromSource(const char* vertexSource, const char* fragmentSource) {
     unsigned int vertex, fragment;
 
     // Vertex Shader
@@ -16,7 +58,6 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource) {
     checkCompileErrors(fragment, "FRAGMENT");
 
     // Shader Program
-    ID = glCreateProgram();
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
     glLinkProgram(ID);
@@ -25,6 +66,35 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource) {
     // リンク後に個別のシェーダーオブジェクトは不要になるので削除
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+    std::cout << "Successfully compiled and linked program from source." << std::endl;
+}
+
+void Shader::saveBinary(const std::string& cacheFilePath) {
+    GLint formats = 0;
+    glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &formats);
+
+    if (formats > 0) {
+        GLint length = 0;
+        glGetProgramiv(ID, GL_PROGRAM_BINARY_LENGTH, &length);
+
+        if (length > 0) {
+            std::vector<char> buffer(length);
+            GLenum format = 0;
+
+            glGetProgramBinary(ID, length, NULL, &format, buffer.data());
+
+            std::ofstream ofs(cacheFilePath, std::ios::binary);
+            if (ofs.is_open()) {
+                ofs.write(reinterpret_cast<char *>(&format), sizeof(format));
+                ofs.write(reinterpret_cast<char *>(&length), sizeof(length));
+                ofs.write(buffer.data(), length);
+                std::cout << "Shader binary successfully saved to: " << cacheFilePath << std::endl;
+                ofs.close();
+                return;
+            }
+        }
+    }
+    std::cout << "Binary saving skipped." << std::endl;
 }
 
 void Shader::use() const {

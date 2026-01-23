@@ -29,7 +29,7 @@ clean:
 	rm -f $(OBJS)
 
 fclean: clean
-	rm -f $(NAME) output.png history.bin
+	rm -f $(NAME) output.png *.bin
 
 re: fclean all
 
