@@ -34,4 +34,4 @@
 settings.json
 tinyPaint
 output.png
-history.bin
+*.bin

@@ -19,7 +19,7 @@ void main() {
 
 Brush::Brush() {
     // 1. シェーダー作成
-    shader = new Shader(brushVertexShaderSource, brushFragmentShaderSource);
+    shader = new Shader(brushVertexShaderSource, brushFragmentShaderSource, "brushShader.bin");
     
     // 2. 円形メッシュ作成 (XY形式)
     std::vector<float> vertices;
