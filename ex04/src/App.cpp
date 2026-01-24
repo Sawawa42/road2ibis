@@ -25,7 +25,7 @@ App::App(int width, int height, const char* title, float size)
     : isDrawing(false), lastX(0.0f), lastY(0.0f), fboSize(size) {
     // GLFW初期化
     if (!glfwInit()) {
-        exit(-1);
+        throw std::runtime_error("glfwInit dailed");
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -34,7 +34,7 @@ App::App(int width, int height, const char* title, float size)
     window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window) {
         glfwTerminate();
-        exit(-1);
+        throw std::runtime_error("glfwCreateWindow dailed");
     }
     glfwMakeContextCurrent(window);
 

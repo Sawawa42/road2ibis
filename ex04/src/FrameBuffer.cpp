@@ -15,7 +15,7 @@ FrameBuffer::FrameBuffer(int w, int h): width(w), height(h) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Error: Framebuffer is not complete!" << std::endl;
+        throw std::runtime_error("Framebuffer is not complete");
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

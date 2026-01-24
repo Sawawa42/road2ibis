@@ -79,11 +79,9 @@ void App::handleKeyboardInput() {
             break;
         case InputAction::Undo: {
             if (!ctrlzPressed) {
-                std::cout << "Undo requested" << std::endl;
                 std::vector<TileData> restore = historyManager->undo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Undo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlzPressed = true;
             }
@@ -91,11 +89,9 @@ void App::handleKeyboardInput() {
         }
         case InputAction::Redo: {
             if (!ctrlyPressed) {
-                std::cout << "Redo requested" << std::endl;
                 std::vector<TileData> restore = historyManager->redo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Redo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlyPressed = true;
             }
@@ -198,6 +194,7 @@ void App::saveImage(const char* filename) {
 
     unsigned error = lodepng::encode(filename, flippedPixels, static_cast<unsigned>(size), static_cast<unsigned>(size));
     if (error) {
+        // throwせずユーザーに保存の再試行の機会を与える
         std::cerr << "Error saving image: " << lodepng_error_text(error) << std::endl;
     }
 }
