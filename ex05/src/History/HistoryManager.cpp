@@ -134,12 +134,10 @@ std::vector<TileData> HistoryManager::undo() {
         std::lock_guard<std::mutex> lock(indexMutex);
         auto it = beforeIndex.find(targetStepID);
         if (it == beforeIndex.end()) {
-            std::cerr << "No records found for stepID " << targetStepID << std::endl;
             currentStepID--;
             return result;
         }
         records = it->second;
-        std::cout << "Undoing stepID " << targetStepID << " with " << records.size() << " tiles." << std::endl;
         currentStepID--;
     }
 
@@ -167,11 +165,9 @@ std::vector<TileData> HistoryManager::redo() {
         std::lock_guard<std::mutex> lock(indexMutex);
         auto it = afterIndex.find(targetStepID);
         if (it == afterIndex.end()) {
-            std::cerr << "No after-records found for stepID " << targetStepID << std::endl;
             return result;
         }
         records = it->second;
-        std::cout << "Redoing stepID " << targetStepID << " with " << records.size() << " tiles." << std::endl;
         currentStepID++;
     }
 

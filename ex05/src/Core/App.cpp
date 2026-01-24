@@ -50,40 +50,45 @@ void App::handleKeyboardInput() {
     static bool ctrlyPressed = false;
     switch (action) {
         case InputAction::SetEraser:
+            std::cout << "Pressed 0" << std::endl;
             brush->setColor(0, 0, 0, 0);
             brush->setSize(30.0f);
             isEraser = true;
             break;
         case InputAction::SetBrushBlack:
+            std::cout << "Pressed 1" << std::endl;
             brush->setColor(0, 0, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushRed:
+            std::cout << "Pressed R" << std::endl;
             brush->setColor(255, 0, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushGreen:
+            std::cout << "Pressed G" << std::endl;
             brush->setColor(0, 255, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushBlue:
+            std::cout << "Pressed B" << std::endl;
             brush->setColor(0, 0, 255, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::Save:
+            std::cout << "Pressed S" << std::endl;
             saveImage("output.png");
             break;
         case InputAction::Undo: {
             if (!ctrlzPressed) {
-                std::cout << "Undo requested" << std::endl;
+                std::cout << "Pressed Ctrl+Z" << std::endl;
                 std::vector<TileData> restore = historyManager->undo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Undo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlzPressed = true;
             }
@@ -91,11 +96,10 @@ void App::handleKeyboardInput() {
         }
         case InputAction::Redo: {
             if (!ctrlyPressed) {
-                std::cout << "Redo requested" << std::endl;
+                std::cout << "Pressed Ctrl+Y" << std::endl;
                 std::vector<TileData> restore = historyManager->redo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
-                    std::cout << "Redo performed: stepID=" << historyManager->getCurrentStepID() << std::endl;
                 }
                 ctrlyPressed = true;
             }
@@ -198,6 +202,7 @@ void App::saveImage(const char* filename) {
 
     unsigned error = lodepng::encode(filename, flippedPixels, static_cast<unsigned>(size), static_cast<unsigned>(size));
     if (error) {
+        // throwせずユーザーに保存の再試行の機会を与える
         std::cerr << "Error saving image: " << lodepng_error_text(error) << std::endl;
     }
 }
