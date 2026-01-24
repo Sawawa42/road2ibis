@@ -50,42 +50,35 @@ void App::handleKeyboardInput() {
     static bool ctrlyPressed = false;
     switch (action) {
         case InputAction::SetEraser:
-            std::cout << "Pressed 0" << std::endl;
             brush->setColor(0, 0, 0, 0);
             brush->setSize(30.0f);
             isEraser = true;
             break;
         case InputAction::SetBrushBlack:
-            std::cout << "Pressed 1" << std::endl;
             brush->setColor(0, 0, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushRed:
-            std::cout << "Pressed R" << std::endl;
             brush->setColor(255, 0, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushGreen:
-            std::cout << "Pressed G" << std::endl;
             brush->setColor(0, 255, 0, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::SetBrushBlue:
-            std::cout << "Pressed B" << std::endl;
             brush->setColor(0, 0, 255, 255);
             brush->setSize(30.0f);
             isEraser = false;
             break;
         case InputAction::Save:
-            std::cout << "Pressed S" << std::endl;
             saveImage("output.png");
             break;
         case InputAction::Undo: {
             if (!ctrlzPressed) {
-                std::cout << "Pressed Ctrl+Z" << std::endl;
                 std::vector<TileData> restore = historyManager->undo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);
@@ -96,7 +89,6 @@ void App::handleKeyboardInput() {
         }
         case InputAction::Redo: {
             if (!ctrlyPressed) {
-                std::cout << "Pressed Ctrl+Y" << std::endl;
                 std::vector<TileData> restore = historyManager->redo();
                 if (!restore.empty()) {
                     canvas->restoreTiles(restore);

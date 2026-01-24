@@ -3,7 +3,7 @@
 
 Window::Window(int width, int height, const char* title) {
     if (!glfwInit()) {
-        exit(-1);
+        throw std::runtime_error("glfwInit dailed");
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -12,7 +12,7 @@ Window::Window(int width, int height, const char* title) {
     window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window) {
         glfwTerminate();
-        exit(-1);
+        throw std::runtime_error("glfwCreateWindow dailed");
     }
     glfwMakeContextCurrent(window);
 
