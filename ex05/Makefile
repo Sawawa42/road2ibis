@@ -1,7 +1,8 @@
 NAME = tinyPaint
 CXX = c++
-CXXFLAGS = -Isrc -Iexternal/lodepng
-LIBS = -lglfw -lGLEW -lGL
+BREW_PREFIX := $(shell brew --prefix)
+CXXFLAGS = -Isrc -Iexternal/lodepng -I$(BREW_PREFIX)/include
+LIBS = -L$(BREW_PREFIX)/lib -lglfw -lGLEW -framework OpenGL
 SRCS = src/main.cpp \
 	src/Core/App.cpp \
 	src/Core/InputManager.cpp \

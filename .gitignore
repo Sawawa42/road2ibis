@@ -35,3 +35,4 @@ settings.json
 tinyPaint
 output.png
 *.bin
+.vscode/*
