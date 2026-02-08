@@ -1,6 +1,6 @@
 #include "Brush.hpp"
 
-const char* brushVertexShaderSource = R"(#version 460 core
+const char* brushVertexShaderSource = R"(#version 410 core
 layout(location = 0) in vec2 aPos;
 uniform vec2 uPos;
 uniform vec2 uSize;
@@ -10,7 +10,7 @@ void main() {
     gl_Position = vec4(pos, 0.0, 1.0);
 })";
 
-const char* brushFragmentShaderSource = R"(#version 460 core
+const char* brushFragmentShaderSource = R"(#version 410 core
 uniform vec4 uColor;
 out vec4 FragColor;
 void main() {
